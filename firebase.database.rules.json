@@ -1,0 +1,65 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "courses": {
+      ".read": true,
+      "$courseId": {
+        ".write": "auth != null && auth.token.email === 'YOUR_ADMIN_EMAIL@example.com'"
+      }
+    },
+    "lessons": {
+      ".read": true,
+      "$lessonId": {
+        ".write": "auth != null && auth.token.email === 'YOUR_ADMIN_EMAIL@example.com'"
+      }
+    },
+    "eClasses": {
+      ".read": true,
+      "$classId": {
+        ".write": "auth != null && auth.token.email === 'YOUR_ADMIN_EMAIL@example.com'"
+      }
+    },
+    "eClassMembers": {
+      ".read": "auth != null && auth.token.email === 'YOUR_ADMIN_EMAIL@example.com'",
+      "$classId": {
+        "$uid": {
+          ".read": "auth != null && (auth.token.email === 'YOUR_ADMIN_EMAIL@example.com' || auth.uid === $uid)",
+          ".write": "auth != null && (auth.token.email === 'YOUR_ADMIN_EMAIL@example.com' || (auth.uid === $uid && !root.child('blockedMembers').child($uid).exists() && root.child('eClasses').child($classId).child('status').val() === 'published'))"
+        }
+      }
+    },
+    "announcements": {
+      ".read": true,
+      "$postId": {
+        ".write": "auth != null && auth.token.email === 'YOUR_ADMIN_EMAIL@example.com'"
+      }
+    },
+    "groupMessages": {
+      ".read": "auth != null",
+      "$messageId": {
+        ".write": "auth != null && (auth.token.email === 'YOUR_ADMIN_EMAIL@example.com' || (root.child('groupMembers').child(auth.uid).exists() && !root.child('blockedMembers').child(auth.uid).exists() && newData.child('uid').val() === auth.uid && newData.child('text').isString() && newData.child('text').val().length <= 500))"
+      }
+    },
+    "groupMembers": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && ((auth.uid === $uid && !root.child('blockedMembers').child($uid).exists()) || auth.token.email === 'YOUR_ADMIN_EMAIL@example.com')"
+      }
+    },
+    "blockedMembers": {
+      ".read": "auth != null && auth.token.email === 'YOUR_ADMIN_EMAIL@example.com'",
+      "$uid": {
+        ".write": "auth != null && auth.token.email === 'YOUR_ADMIN_EMAIL@example.com'"
+      }
+    },
+    "privateMessages": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'YOUR_ADMIN_EMAIL@example.com')",
+        "$messageId": {
+          ".write": "auth != null && (auth.token.email === 'YOUR_ADMIN_EMAIL@example.com' || (auth.uid === $uid && newData.child('read').val() === true && data.child('read').val() === false))"
+        }
+      }
+    }
+  }
+}
