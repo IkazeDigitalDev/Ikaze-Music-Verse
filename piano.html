@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>IKAZE PIANO — Ultimate 3D Studio</title>
+<!-- Favicon: 8th Note -->
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzBDMTIyMCIvPjxwYXRoIGQ9Ik0zMCA3MFYzMGw0MC0xMHY0MCIgc3Ryb2tlPSIjQzhBMzREIiBzdHJva2Utd2lkdGg9IjgiIGZpbGw9Im5vbmUiLz48ZWxsaXBzZSBjeD0iMjAiIGN5PSI3NSIgcng9IjEwIiByeT0iOCIgZmlsbD0iI0M4QTM0RCIvPjxlbGxpcHNlIGN4PSI2MCIgY3k9IjY1IiByeD0iMTAiIHJ5PSI4IiBmaWxsPSIjQzhBMzREIi8+PC9zdmc+">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --midnight:#0C1220;--navy:#18263B;--gold:#C8A34D;--ivory:#F4F3EF;
+    --grey:#A6ACB8;--glass:rgba(24,38,59,.92);--border:rgba(200,163,77,.25);
+  }
+  html,body{height:100%;overflow:hidden;background:#0d0d0d;color:var(--ivory);
+    font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased; user-select: none;}
+  #app{position:fixed;inset:0;}
+  canvas{display:block;width:100%;height:100%;touch-action:none}
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;z-index:10;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:1rem clamp(12px,3vw,32px);
+    background:linear-gradient(to bottom,rgba(12,18,32,.95),transparent);
+    pointer-events:none;
+  }
+  .topbar>*{pointer-events:auto}
+  .logo{display:flex;align-items:center;gap:.5rem;font-weight:800;
+    font-size:clamp(1rem,2vw,1.3rem);letter-spacing:-.02em;color:var(--ivory)}
+  .logo .mark{color:var(--gold);font-size:1.8em;line-height:1; filter: drop-shadow(0 0 8px rgba(200,163,77,.4));}
+  .logo small{display:block;font-size:.45em;letter-spacing:.25em;color:var(--grey);
+    font-weight:500;text-transform:uppercase;margin-top:2px}
+
+  /* AUTH BUTTON (Top Right) */
+  .auth-area { 
+    position: absolute; 
+    top: 1rem; 
+    right: clamp(12px,3vw,32px); 
+    display: flex; 
+    gap: 0.8rem; 
+    align-items: center;
+  }
+  .btn-auth {
+    background: var(--glass); border: 1px solid var(--border); color: var(--gold);
+    padding: 0.6rem 1.2rem; border-radius: 30px; font-weight: 600; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,.4);
+  }
+  .btn-auth:hover { background: rgba(200,163,77,.15); border-color: var(--gold); }
+  .user-avatar {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--gold);
+    color: var(--midnight); display: flex; align-items: center; justify-content: center;
+    font-weight: bold; cursor: pointer; font-size: 1.1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,.4);
+  }
+
+  /* FOOTER (Bottom Left) */
+  .footer {
+    position: fixed; bottom: 1rem; left: clamp(12px,3vw,32px); z-index: 10;
+    font-size: 0.75rem; color: var(--grey);
+  }
+  .footer a {
+    color: var(--gold); text-decoration: none; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .footer a:hover {
+    text-decoration: underline;
+    text-shadow: 0 0 8px rgba(200,163,77,.5);
+  }
+
+  /* ---------- FLOATING ACTION BUTTONS (Settings) ---------- */
+  .fab-container {
+    position: fixed; top: 4.5rem; right: clamp(12px,3vw,32px); z-index: 30;
+    display: flex; flex-direction: column; gap: 0.8rem;
+  }
+  .fab-btn {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--glass); border: 1px solid var(--border);
+    color: var(--gold); font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(10px); transition: all .3s cubic-bezier(0.2,0.9,0.4,1);
+    box-shadow: 0 4px 15px rgba(0,0,0,.4);
+  }
+  .fab-btn:hover { transform: scale(1.05); border-color: var(--gold); box-shadow: 0 0 20px rgba(200,163,77,.3); }
+  .fab-btn.active { background: var(--gold); color: var(--midnight); }
+  .fab-btn.danger:hover { background: rgba(255,75,75,.2); border-color: #FF4B4B; color: #FF4B4B; box-shadow: 0 0 20px rgba(255,75,75,.3); }
+
+  /* ---------- CONTROL PANEL (SCROLLABLE) ---------- */
+  .control-panel {
+    position: fixed; top: 4.5rem; right: 5.5rem; z-index: 25;
+    width: 320px; padding: 1.5rem; border-radius: 20px;
+    background: var(--glass); border: 1px solid var(--border);
+    backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,.6);
+    transform-origin: top right; transition: all .3s cubic-bezier(0.2,0.9,0.4,1);
+    opacity: 0; transform: scale(0.9); pointer-events: none;
+    
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) transparent;
+  }
+  .control-panel::-webkit-scrollbar { width: 6px; }
+  .control-panel::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+  
+  .control-panel.open { opacity: 1; transform: scale(1); pointer-events: auto; }
+  
+  .panel-section {
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    padding-bottom: 1rem; margin-bottom: 1rem;
+  }
+  .panel-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+  .panel-section h3 {
+    font-size: .75rem; color: var(--gold); text-transform: uppercase;
+    letter-spacing: .1em; margin-bottom: 1rem;
+  }
+
+  /* D-Pad */
+  .dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px; width: 140px; margin: 0 auto;
+  }
+  .dpad button {
+    background: rgba(255,255,255,.05); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--ivory); cursor: pointer; aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .dpad button:hover { background: rgba(200,163,77,.2); color: var(--gold); }
+  .dpad button:active { transform: scale(0.95); }
+  .dpad .empty { visibility: hidden; }
+
+  /* Sliders */
+  .control-row { display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1rem; }
+  .control-row:last-child { margin-bottom: 0; }
+  .control-row label {
+    font-size: .78rem; color: var(--grey); display: flex; justify-content: space-between;
+  }
+  .control-row label span { color: var(--gold); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .rng { width: 100%; accent-color: var(--gold); cursor: pointer; }
+  .sel { background: var(--midnight); border: 1px solid rgba(200,163,77,.3); color: var(--ivory);
+    padding: .5rem .6rem; border-radius: 8px; font-size: .8rem; cursor: pointer; outline: none; width: 100%;}
+  .sel:focus { border-color: var(--gold); }
+  
+  .btn-action {
+    background: rgba(200,163,77,.1); border: 1px solid var(--border); color: var(--gold);
+    padding: .6rem 1rem; border-radius: 8px; font-size: .8rem; font-weight: 600;
+    cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: .5rem;
+    transition: all .2s; margin-bottom: 0.5rem;
+  }
+  .btn-action:hover { background: rgba(200,163,77,.2); }
+  .btn-rec {
+    background: transparent; border: 1px solid rgba(255,75,75,.5); color: #FF8A8A;
+    padding: .6rem 1rem; border-radius: 8px; font-size: .8rem; font-weight: 600;
+    cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: .5rem;
+    transition: all .2s;
+  }
+  .btn-rec:hover { background: rgba(255,75,75,.1); }
+  .btn-rec.recording { background: #FF4B4B; color: #fff; border-color: #FF4B4B; animation: pulseRec 1.2s infinite; }
+  @keyframes pulseRec { 0%,100% { box-shadow: 0 0 0 0 rgba(255,75,75,.4); } 50% { box-shadow: 0 0 0 8px rgba(255,75,75,0); } }
+
+  /* ---------- NOTE DISPLAY ---------- */
+  .note-display{
+    position:fixed;top:clamp(60px,10vh,100px);left:50%;transform:translateX(-50%);z-index:9;
+    min-width:120px;text-align:center;padding:.5rem 1.5rem;border-radius:30px;
+    background:rgba(0,0,0,.7);border:1px solid var(--border);backdrop-filter:blur(8px);
+    font-weight:700;color:var(--gold);font-size:1.2rem;letter-spacing:.05em;
+    font-variant-numeric:tabular-nums;pointer-events:none; transition:opacity .25s;
+    box-shadow: 0 4px 15px rgba(0,0,0,.5);
+  }
+  .note-display.flash{animation:flash .35s ease}
+  @keyframes flash{0%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.15)}100%{transform:translateX(-50%) scale(1)}}
+
+  /* ---------- MODALS ---------- */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.85);
+    backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .modal-content {
+    background: var(--glass); border: 1px solid var(--border); border-radius: 20px;
+    padding: 2rem; width: 90%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,.8);
+    transform: translateY(20px); transition: transform .3s;
+    max-height: 85vh; overflow-y: auto;
+  }
+  .modal-overlay.open .modal-content { transform: translateY(0); }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .modal-header h2 { font-size: 1.3rem; color: var(--gold); }
+  .close-btn { background: none; border: none; color: var(--grey); font-size: 1.5rem; cursor: pointer; }
+  
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-size: .8rem; color: var(--grey); margin-bottom: .4rem; }
+  .form-input {
+    width: 100%; background: rgba(0,0,0,.3); border: 1px solid var(--border);
+    color: var(--ivory); padding: .8rem; border-radius: 8px; font-family: inherit;
+  }
+  .form-input:focus { outline: none; border-color: var(--gold); }
+  .btn-primary {
+    width: 100%; background: var(--gold); color: var(--midnight); border: none;
+    padding: .8rem; border-radius: 8px; font-weight: 700; font-size: .9rem;
+    cursor: pointer; margin-top: 1rem; transition: all .2s;
+  }
+  .btn-primary:hover { background: #d8b35e; }
+  .btn-google {
+    width: 100%; background: #fff; color: #333; border: none;
+    padding: .8rem; border-radius: 8px; font-weight: 700; font-size: .9rem;
+    cursor: pointer; margin-top: .8rem; display: flex; align-items: center; justify-content: center; gap: .5rem;
+  }
+  .btn-google:hover { background: #eee; }
+  .divider { text-align: center; color: var(--grey); font-size: .8rem; margin: 1rem 0; position: relative; }
+  .divider::before, .divider::after {
+    content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: rgba(255,255,255,.1);
+  }
+  .divider::before { left: 0; }
+  .divider::after { right: 0; }
+
+  /* History List */
+  .history-list { max-height: 300px; overflow-y: auto; margin-bottom: 1rem; }
+  .history-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .8rem; border-bottom: 1px solid rgba(255,255,255,.05);
+    font-size: .85rem;
+  }
+  .history-item:hover { background: rgba(255,255,255,.03); }
+  .history-empty { text-align: center; color: var(--grey); padding: 2rem 0; font-size: .9rem; }
+
+  /* Tutorial Styles */
+  .tutorial-step { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+  .tutorial-icon {
+    width: 40px; height: 40px; border-radius: 10px; background: rgba(200,163,77,.15);
+    color: var(--gold); display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .tutorial-text h4 { font-size: .95rem; margin-bottom: .3rem; color: var(--ivory); }
+  .tutorial-text p { font-size: .85rem; color: var(--grey); line-height: 1.5; }
+  .tutorial-text kbd {
+    background: rgba(255,255,255,.1); padding: 2px 6px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,.2); font-family: inherit; font-weight: 600; color: var(--gold);
+  }
+
+  /* ---------- LOADER ---------- */
+  .loader{position:fixed;inset:0;z-index:50;background:#0d0d0d;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;
+    transition:opacity .6s;}
+  .loader.hide{opacity:0;pointer-events:none}
+  .loader-mark{font-size:4rem;color:var(--gold); filter: drop-shadow(0 0 15px rgba(200,163,77,.5));
+    animation:bob 1.4s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-10px) rotate(-5deg)}}
+  .loader-text{font-size:.8rem;letter-spacing:.3em;text-transform:uppercase;color:var(--grey)}
+  .loader-bar{width:200px;height:4px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+  .loader-bar i{display:block;height:100%;width:0;background:var(--gold);border-radius:4px;
+    animation:load 1.4s ease-in-out infinite}
+  @keyframes load{0%{width:0;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0;margin-left:100%}}
+
+  @media(max-width:768px){
+    .auth-area { top: 0.8rem; right: 12px; }
+    .fab-container { top: 4.5rem; right: 12px; }
+    .control-panel { width: calc(100vw - 24px); right: 12px; top: 8rem; max-height: calc(100vh - 140px); }
+    .fab-btn { width: 40px; height: 40px; font-size: 1rem;}
+    .note-display{font-size:1rem;padding:.4rem 1.2rem;top:60px}
+    .footer { bottom: 0.5rem; left: 12px; font-size: 0.65rem;}
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<!-- Loader -->
+<div class="loader" id="loader">
+  <div class="loader-mark">♪</div>
+  <div class="loader-text">Building Stage…</div>
+  <div class="loader-bar"><i></i></div>
+</div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="logo">
+    <span class="mark">♪</span>
+    <span>IKAZE PIANO<small>Ultimate Studio</small></span>
+  </div>
+  
+  <!-- Auth Area moved to Top-Right -->
+  <div class="auth-area" id="authArea">
+    <!-- Populated via JS -->
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  Developed by <a href="https://ikaze-digital.vercel.app" target="_blank">IKAZE DIGITAL</a>
+</div>
+
+<!-- Floating Action Buttons (Right Side, under auth) -->
+<div class="fab-container">
+  <button class="fab-btn" id="historyBtn" title="My Melodies"><i class="fas fa-history"></i></button>
+  <button class="fab-btn danger" id="removePianoBtn" title="Remove Last Piano"><i class="fas fa-minus"></i></button>
+  <button class="fab-btn" id="addPianoBtn" title="Add Piano"><i class="fas fa-plus"></i></button>
+  <button class="fab-btn" id="gearBtn" title="Controls & Mixer"><i class="fas fa-sliders-h"></i></button>
+</div>
+
+<!-- Control Panel -->
+<div class="control-panel" id="controlPanel">
+  <div class="panel-section">
+    <h3>Position Last Piano</h3>
+    <div class="dpad">
+      <button class="empty"></button>
+      <button onclick="movePiano(0, 1, 0)"><i class="fas fa-arrow-up"></i></button>
+      <button class="empty"></button>
+      <button onclick="movePiano(-1, 0, 0)"><i class="fas fa-arrow-left"></i></button>
+      <button onclick="movePiano(0, 0, 1)"><i class="fas fa-arrow-down"></i></button>
+      <button onclick="movePiano(1, 0, 0)"><i class="fas fa-arrow-right"></i></button>
+      <button class="empty"></button>
+      <button onclick="movePiano(0, -1, 0)"><i class="fas fa-arrow-down"></i></button>
+      <button class="empty"></button>
+    </div>
+  </div>
+
+  <div class="panel-section">
+    <h3>Voice / Instrument</h3>
+    <select class="sel" id="instrumentSelect">
+      <option value="concert-grand">Concert Grand</option>
+      <option value="studio-grand">Studio Grand</option>
+      <option value="soft-piano">Soft Piano</option>
+      <option value="bright-piano">Bright Piano</option>
+      <option value="electric-piano">Electric Piano</option>
+      <option value="rhodes">Rhodes</option>
+      <option value="organ">Church Organ</option>
+      <option value="synth-piano">Synth Piano</option>
+      <option value="strings">Cinematic Strings</option>
+      <option value="ambient">Ambient Pad</option>
+    </select>
+  </div>
+
+  <div class="panel-section">
+    <h3>Sound Tweaks</h3>
+    <div class="control-row">
+      <label>Transpose <span id="transposeLabel">0 st</span></label>
+      <select class="sel" id="transposeSelect"></select>
+    </div>
+    <div class="control-row">
+      <label>Fine Pitch <span id="pitchLabel">0 ct</span></label>
+      <input type="range" class="rng" id="pitchSlider" min="-100" max="100" value="0">
+    </div>
+    <div class="control-row">
+      <label>Master Volume <span id="volLabel">72%</span></label>
+      <input type="range" class="rng" id="volSlider" min="0" max="100" value="72">
+    </div>
+    <div class="control-row">
+      <label>Reverb Space <span id="reverbLabel">15%</span></label>
+      <input type="range" class="rng" id="reverbSlider" min="0" max="100" value="15">
+    </div>
+    <div class="control-row">
+      <label>Zoom / Distance <span id="zoomLabel">6.2</span></label>
+      <input type="range" class="rng" id="zoomSlider" min="3" max="15" step="0.1" value="6.2">
+    </div>
+  </div>
+
+  <div class="panel-section" style="border:none; padding:0;">
+    <button class="btn-rec" id="recordBtn"><i class="fas fa-circle"></i> Start Recording</button>
+    <button class="btn-action" id="saveMelodyBtn" style="margin-top:0.8rem;"><i class="fas fa-save"></i> Save to My Melodies</button>
+    <button class="btn-action" id="tutorialBtn"><i class="fas fa-question-circle"></i> How to Play (Tutorial)</button>
+  </div>
+</div>
+
+<!-- Note display -->
+<div class="note-display" id="noteDisplay">—</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Sign In / Sign Up</h2>
+      <button class="close-btn" onclick="toggleModal('authModal', false)">&times;</button>
+    </div>
+    <button class="btn-google" id="googleSignInBtn">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18" alt="Google"> Continue with Google
+    </button>
+    <div class="divider">or use email</div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" class="form-input" id="authEmail" placeholder="you@example.com">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" class="form-input" id="authPassword" placeholder="••••••••">
+    </div>
+    <button class="btn-primary" id="emailAuthBtn">Sign In / Sign Up</button>
+    <p style="font-size:.75rem; color:var(--grey); text-align:center; margin-top:1rem;">
+      By signing in, you agree to save your melodies to the IKAZE cloud.
+    </p>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>My Melodies</h2>
+      <button class="close-btn" onclick="toggleModal('historyModal', false)">&times;</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+    <p style="font-size:.75rem; color:var(--grey); text-align:center;" id="historyPrompt">
+      Sign in to save and view your melodies.
+    </p>
+  </div>
+</div>
+
+<!-- TUTORIAL MODAL -->
+<div class="modal-overlay" id="tutorialModal">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <h2>How to Play</h2>
+      <button class="close-btn" onclick="toggleModal('tutorialModal', false)">&times;</button>
+    </div>
+    
+    <div class="tutorial-step">
+      <div class="tutorial-icon"><i class="fas fa-keyboard"></i></div>
+      <div class="tutorial-text">
+        <h4>Computer Keyboard Mapping</h4>
+        <p>
+          <b>White Keys:</b> <kbd>C</kbd> <kbd>D</kbd> <kbd>E</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>A</kbd> <kbd>B</kbd> <kbd>N</kbd> (Octave C)<br>
+          <b>Black Keys:</b> <kbd>Shift + C</kbd> (C#) · <kbd>Shift + D</kbd> (D#) · <kbd>Shift + F</kbd> (F#) · <kbd>Shift + G</kbd> (G#) · <kbd>Shift + A</kbd> (A#)
+        </p>
+      </div>
+    </div>
+
+    <div class="tutorial-step">
+      <div class="tutorial-icon"><i class="fas fa-arrows-alt"></i></div>
+      <div class="tutorial-text">
+        <h4>Shift Octaves & Sustain</h4>
+        <p>
+          Press <kbd>Z</kbd> to shift down an octave, and <kbd>X</kbd> to shift up.<br>
+          Hold <kbd>Space</kbd> for everlasting sustain (like a real pedal).
+        </p>
+      </div>
+    </div>
+
+    <div class="tutorial-step">
+      <div class="tutorial-icon"><i class="fas fa-sliders-h"></i></div>
+      <div class="tutorial-text">
+        <h4>Mixer & Stacks</h4>
+        <p>
+          Use the <b>Settings gear</b> to open the mixer. Change voices, add reverb, and transpose.<br>
+          Click the <b>+ Plus button</b> to add more pianos stacked on top of each other. Use the D-Pad in the settings to move the newest piano.
+        </p>
+      </div>
+    </div>
+
+    <div class="tutorial-step">
+      <div class="tutorial-icon"><i class="fas fa-microphone"></i></div>
+      <div class="tutorial-text">
+        <h4>Record & Save</h4>
+        <p>
+          Click <b>Start Recording</b> in the settings to capture your audio. Click again to stop and download.<br>
+          Click <b>Save to My Melodies</b> to keep a history in your account.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THREE.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+'use strict';
+
+// Suppress Chrome extension errors
+window.addEventListener('error', (e) => {
+  if (e.message && e.message.includes('message channel closed')) {
+    e.preventDefault();
+    return false;
+  }
+});
+
+/* ================================================================
+   CONSTANTS & EXACT CUSTOM KEYBOARD MAPPING
+   ================================================================ */
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const BLACK_PCS  = [1,3,6,8,10];
+
+const KEY_MAP = {
+  'c':'C', 'd':'D', 'e':'E', 'f':'F', 'g':'G', 'a':'A', 'b':'B', 'n':'C',
+  'C':'C#', 'D':'D#', 'F':'F#', 'G':'G#', 'A':'A#'
+};
+
+const START_MIDI = 48; // C3
+const END_MIDI   = 84; // C6
+
+/* ================================================================
+   AUDIO ENGINE
+   ================================================================ */
+const AudioEngine = (function(){
+  let ctx=null, master=null, dry=null, wet=null, conv=null;
+  let sustain=false;
+  const active=new Map();
+  let instrument='concert-grand';
+  
+  let transpose = 0;
+  let fineTune = 0; 
+
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let isRecording = false;
+
+  function init(){
+    if(ctx) return;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    master = ctx.createGain(); master.gain.value=0.72; master.connect(ctx.destination);
+    dry = ctx.createGain(); dry.gain.value=0.85; dry.connect(master);
+    
+    conv = ctx.createConvolver(); conv.buffer = buildIR(2.2);
+    wet = ctx.createGain(); wet.gain.value=0.15;
+    conv.connect(wet); wet.connect(master);
+    
+    const dest = ctx.createMediaStreamDestination();
+    master.connect(dest);
+    mediaRecorder = new MediaRecorder(dest.stream);
+    
+    mediaRecorder.ondataavailable = e => {
+      if (e.data.size > 0) recordedChunks.push(e.data);
+    };
+    
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `IKAZE_Studio_${Date.now()}.webm`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      recordedChunks = [];
+    };
+  }
+  
+  function buildIR(sec){
+    const rate=ctx.sampleRate, len=rate*sec;
+    const buf=ctx.createBuffer(2,len,rate);
+    for(let c=0;c<2;c++){
+      const d=buf.getChannelData(c);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.4);
+    }
+    return buf;
+  }
+  
+  function noteToFreq(note, octave){
+    const semi = NOTE_NAMES.indexOf(note);
+    if(semi === -1) return 440;
+    const midi = (octave + 1) * 12 + semi + transpose;
+    const baseFreq = 440 * Math.pow(2, (midi - 69) / 12);
+    return baseFreq * Math.pow(2, fineTune / 1200);
+  }
+  
+  function paramsFor(id){
+    const p={
+      'concert-grand': {t:'triangle', a:.005, d:.32, s:.4, r:1.5, dt:0, filt: 4000},
+      'studio-grand':  {t:'triangle', a:.003, d:.28, s:.5, r:1.2, dt:2, filt: 5000},
+      'soft-piano':    {t:'sine',     a:.02,  d:.5,  s:.3, r:2.0, dt:0, filt: 2000},
+      'bright-piano':  {t:'sawtooth', a:.002, d:.22, s:.6, r:1.0, dt:0, filt: 8000},
+      'electric-piano':{t:'square',   a:.01,  d:.4,  s:.5, r:1.6, dt:3, filt: 3000},
+      'rhodes':        {t:'sine',     a:.01,  d:.6,  s:.4, r:1.8, dt:0, filt: 3500},
+      'organ':         {t:'sawtooth', a:.05,  d:.1,  s:.8, r:.5, dt:0, filt: 2500},
+      'synth-piano':   {t:'sawtooth', a:.01,  d:.3,  s:.6, r:1.2, dt:5, filt: 6000},
+      'strings':       {t:'triangle', a:.3,   d:.5,  s:.7, r:2.5, dt:0, filt: 1500},
+      'ambient':       {t:'sine',     a:.5,   d:1.0, s:.8, r:3.0, dt:0, filt: 1000}
+    };
+    return p[id]||p['concert-grand'];
+  }
+  
+  function setInstrument(id){instrument=id}
+  function setVolume(v){if(master)master.gain.setTargetAtTime(v,ctx.currentTime,.02)}
+  function setReverb(v){if(wet)wet.gain.setTargetAtTime(v,ctx.currentTime,.02)}
+  function setTranspose(semitones){transpose = semitones;}
+  function setPitch(cents){fineTune = cents;}
+
+  function noteOn(note, octave){
+    if(!ctx) init();
+    if(ctx.state==='suspended') ctx.resume();
+    const id = note + octave;
+    if(active.has(id)) return;
+    
+    const p=paramsFor(instrument);
+    const osc=ctx.createOscillator();
+    const g=ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    
+    osc.type=p.t;
+    osc.frequency.value=noteToFreq(note, octave);
+    if(p.dt) osc.detune.value=p.dt;
+    
+    filter.type = "lowpass";
+    filter.frequency.value = p.filt || 4000;
+    
+    const t=ctx.currentTime;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(.8,t+p.a);
+    
+    if (sustain) {
+      g.gain.linearRampToValueAtTime(.8, t+p.a+0.05);
+    } else {
+      g.gain.linearRampToValueAtTime(p.s*.8,t+p.a+p.d);
+    }
+    
+    osc.connect(filter);
+    filter.connect(g); 
+    g.connect(dry);
+    if(conv) g.connect(conv);
+    osc.start(t);
+    active.set(id,{osc,g,p});
+  }
+  
+  function noteOff(note, octave){
+    const id = note + octave;
+    const e=active.get(id);
+    if(!e) return;
+    if(sustain) return; 
+    
+    const t=ctx.currentTime;
+    e.g.gain.cancelScheduledValues(t);
+    e.g.gain.setValueAtTime(e.g.gain.value,t);
+    e.g.gain.linearRampToValueAtTime(0,t+e.p.r);
+    e.osc.stop(t+e.p.r);
+    active.delete(id);
+  }
+  
+  function toggleSustain(on){
+    sustain=on;
+    if(!on){ 
+      for(const [id, e] of active){ 
+        const t=ctx.currentTime;
+        e.g.gain.cancelScheduledValues(t);
+        e.g.gain.setValueAtTime(e.g.gain.value,t);
+        e.g.gain.linearRampToValueAtTime(0,t+e.p.r);
+        e.osc.stop(t+e.p.r);
+        active.delete(id);
+      } 
+    }
+  }
+
+  function toggleRecording() {
+    if(!ctx) init();
+    if (isRecording) {
+      mediaRecorder.stop();
+      isRecording = false;
+    } else {
+      recordedChunks = [];
+      mediaRecorder.start();
+      isRecording = true;
+    }
+    return isRecording;
+  }
+  
+  return {init,noteOn,noteOff,setInstrument,setVolume,setReverb,setTranspose,setPitch,toggleSustain,toggleRecording};
+})();
+
+/* ================================================================
+   STATE & THREE.JS SETUP
+   ================================================================ */
+const state = { octave: 0, sustain: false, instrument: 'concert-grand' };
+
+const app = document.getElementById('app');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d0d0d);
+scene.fog = new THREE.Fog(0x0d0d0d, 15, 40); 
+
+const camera = new THREE.PerspectiveCamera(35, innerWidth/innerHeight, 0.1, 100);
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+app.appendChild(renderer.domElement);
+
+/* ---------- LIGHTING ---------- */
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+const keyLight = new THREE.DirectionalLight(0xfff8e7, 1.2);
+keyLight.position.set(-5, 15, 10);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.bias = -0.0005;
+keyLight.shadow.radius = 4;
+keyLight.shadow.camera.left = -20;
+keyLight.shadow.camera.right = 20;
+keyLight.shadow.camera.top = 20;
+keyLight.shadow.camera.bottom = -20;
+scene.add(keyLight);
+
+const frontLight = new THREE.PointLight(0xffddaa, 0.8, 40, 2);
+frontLight.position.set(0, 5, 15);
+scene.add(frontLight);
+
+const rimLight = new THREE.PointLight(0x4466cc, 0.8, 40, 2);
+rimLight.position.set(0, 8, -10);
+scene.add(rimLight);
+
+/* ---------- DESK ---------- */
+const deskGeo = new THREE.PlaneGeometry(200, 200);
+const deskMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9, metalness: 0.1 });
+const desk = new THREE.Mesh(deskGeo, deskMat);
+desk.rotation.x = -Math.PI/2;
+desk.position.y = -0.2;
+desk.receiveShadow = true;
+scene.add(desk);
+
+/* ================================================================
+   PIANO FACTORY & MOVEMENT
+   ================================================================ */
+const allKeyMeshes = []; 
+const pianos = []; 
+
+function createPiano(x, y, z) {
+  const synth = new THREE.Group();
+  synth.position.set(x, y, z);
+  scene.add(synth);
+  pianos.push(synth);
+
+  const matBlackPlastic = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.5, metalness: 0.2 });
+  const matDarkGrey = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.4, metalness: 0.4 });
+  const matGold = new THREE.MeshStandardMaterial({ color: 0xC8A34D, roughness: 0.2, metalness: 0.9 });
+
+  const chassisGeo = new THREE.BoxGeometry(8.0, 0.15, 3.0);
+  const chassis = new THREE.Mesh(chassisGeo, matBlackPlastic);
+  chassis.position.set(0, 0.075, 0);
+  chassis.castShadow = true; chassis.receiveShadow = true;
+  synth.add(chassis);
+
+  const panelGeo = new THREE.BoxGeometry(8.0, 0.05, 0.9);
+  const panel = new THREE.Mesh(panelGeo, matDarkGrey);
+  panel.position.set(0, 0.175, -1.0);
+  panel.castShadow = true;
+  synth.add(panel);
+
+  const slateGeo = new THREE.BoxGeometry(7.8, 0.01, 0.8);
+  const slate = new THREE.Mesh(slateGeo, new THREE.MeshStandardMaterial({color:0x050505, roughness:0.9}));
+  slate.position.set(0, 0.205, -1.0);
+  synth.add(slate);
+
+  const edgeTrimGeo = new THREE.BoxGeometry(8.0, 0.02, 0.02);
+  const edgeTrim1 = new THREE.Mesh(edgeTrimGeo, matGold); edgeTrim1.position.set(0, 0.16, 0.9); synth.add(edgeTrim1);
+  const edgeTrim2 = new THREE.Mesh(edgeTrimGeo, matGold); edgeTrim2.position.set(0, 0.16, -1.5); synth.add(edgeTrim2);
+
+  const sideGeo = new THREE.BoxGeometry(0.15, 0.25, 3.0);
+  const sideL = new THREE.Mesh(sideGeo, matBlackPlastic); sideL.position.set(-4.0, 0.125, 0); sideL.castShadow = true; synth.add(sideL);
+  const sideR = sideL.clone(); sideR.position.x = 4.0; synth.add(sideR);
+
+  const screenGeo = new THREE.BoxGeometry(1.0, 0.3, 0.02);
+  const screen = new THREE.Mesh(screenGeo, new THREE.MeshStandardMaterial({color:0x1a2b4c, emissive:0x113366, emissiveIntensity:0.8}));
+  screen.position.set(0, 0.22, -1.3); screen.rotation.x = -0.2; synth.add(screen);
+
+  const createKnob = (x, z, scale=1) => {
+    const g = new THREE.Group(); g.position.set(x, 0.22, z);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.06*scale, 0.06*scale, 0.04*scale, 16), matGold); base.castShadow = true; g.add(base);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.04*scale, 0.04*scale, 0.05*scale, 16), matDarkGrey); cap.position.y = 0.02*scale; cap.castShadow = true; g.add(cap);
+    const ind = new THREE.Mesh(new THREE.BoxGeometry(0.01*scale, 0.001, 0.04*scale), new THREE.MeshBasicMaterial({color:0xffffff})); ind.position.set(0, 0.046*scale, -0.015*scale); g.add(ind);
+    synth.add(g);
+  }
+  const createSlider = (x, z) => {
+    const g = new THREE.Group(); g.position.set(x, 0.22, z);
+    const slot = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.01, 0.3), new THREE.MeshStandardMaterial({color:0x000000})); slot.position.y = 0.001; g.add(slot);
+    const track = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, 0.3), matDarkGrey); track.position.y = 0.002; g.add(track);
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.03, 0.03), matBlackPlastic); cap.position.y = 0.015; cap.castShadow = true; g.add(cap);
+    synth.add(g);
+  }
+
+  createKnob(-3.0, -1.0); createKnob(-2.2, -1.0, 0.8); createKnob(-1.5, -1.0, 0.8); createKnob(-0.8, -1.0);
+  createKnob(1.0, -1.0); createKnob(1.8, -1.0, 0.8); createKnob(2.5, -1.0);
+  createSlider(3.2, -1.0); createSlider(3.6, -1.0);
+
+  const keyboardGroup = new THREE.Group();
+  keyboardGroup.position.set(0, 0.15, 0.3);
+  synth.add(keyboardGroup);
+
+  const allKeys = [];
+  let whiteCount = 0;
+  for(let m=START_MIDI; m<=END_MIDI; m++){
+    const pc = m % 12;
+    const isBlack = BLACK_PCS.includes(pc);
+    const oct = Math.floor(m/12)-1;
+    const note = NOTE_NAMES[pc];
+    if(!isBlack){ allKeys.push({midi:m, note, oct, isBlack:false, whiteIndex:whiteCount}); whiteCount++; }
+    else { allKeys.push({midi:m, note, oct, isBlack:true}); }
+  }
+
+  const totalWhite = whiteCount;
+  const whiteW = 7.6 / totalWhite;   
+  const whiteH = 0.15;                
+  const whiteD = 1.4;                 
+  const blackW = whiteW * 0.6;
+  const blackH = 0.22;
+  const blackD = 0.9;
+
+  const whiteKeyMat = new THREE.MeshStandardMaterial({ color: 0xfff8e7, roughness: 0.15, metalness: 0.02 });
+  const whiteKeySideMat = new THREE.MeshStandardMaterial({ color: 0xdcd4c4, roughness: 0.4, metalness: 0.02 });
+  const blackKeyMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.08, metalness: 0.2 });
+  const whitePressedMat = new THREE.MeshStandardMaterial({ color: 0xe6ddc5, roughness: 0.15, metalness: 0.05 });
+  const blackPressedMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.2, metalness: 0.4 });
+
+  const whiteKeys = allKeys.filter(k => !k.isBlack);
+  whiteKeys.forEach(k => {
+    const geo = new THREE.BoxGeometry(whiteW * 0.96, whiteH, whiteD);
+    const mesh = new THREE.Mesh(geo, [whiteKeySideMat, whiteKeySideMat, whiteKeyMat, whiteKeySideMat, whiteKeySideMat, whiteKeySideMat]);
+    const x = (k.whiteIndex + 0.5) * whiteW - (totalWhite * whiteW) / 2;
+    mesh.position.set(x, whiteH/2, 0);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    mesh.userData = { note: k.note, oct: k.oct, isBlack: false };
+    keyboardGroup.add(mesh);
+    allKeyMeshes.push({ note: k.note, oct: k.oct, mesh, isBlack: false, baseMat: whiteKeyMat, pressedMat: whitePressedMat });
+  });
+
+  allKeys.filter(k => k.isBlack).forEach(k => {
+    const prevWhite = allKeys.filter(w => !w.isBlack && w.midi < k.midi).pop();
+    const x = (prevWhite.whiteIndex + 1) * whiteW - (totalWhite * whiteW) / 2;
+    const geo = new THREE.BoxGeometry(blackW, blackH, blackD);
+    const mesh = new THREE.Mesh(geo, blackKeyMat);
+    mesh.position.set(x, blackH/2, -whiteD/2 + blackD/2 + 0.05);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    mesh.userData = { note: k.note, oct: k.oct, isBlack: true };
+    keyboardGroup.add(mesh);
+    allKeyMeshes.push({ note: k.note, oct: k.oct, mesh, isBlack: true, baseMat: blackKeyMat, pressedMat: blackPressedMat });
+  });
+}
+
+/* ================================================================
+   MOVEMENT & REMOVAL
+   ================================================================ */
+function movePiano(dx, dy, dz) {
+  if(pianos.length === 0) return;
+  const lastPiano = pianos[pianos.length - 1];
+  lastPiano.position.x += dx * 0.5;
+  lastPiano.position.y += dy * 0.5;
+  lastPiano.position.z += dz * 0.5;
+}
+
+document.getElementById('addPianoBtn').addEventListener('click', () => {
+  const last = pianos[pianos.length - 1];
+  const x = last ? last.position.x : 0;
+  const y = last ? last.position.y + 2.0 : 0;
+  const z = last ? last.position.z : 0;
+  createPiano(x, y, z);
+});
+
+document.getElementById('removePianoBtn').addEventListener('click', () => {
+  if(pianos.length <= 1) return;
+  const lastPiano = pianos.pop();
+  scene.remove(lastPiano);
+  for(let i = allKeyMeshes.length - 1; i >= 0; i--) {
+    let isAttached = false;
+    let obj = allKeyMeshes[i].mesh;
+    while(obj) {
+      if(obj === lastPiano) { isAttached = true; break; }
+      obj = obj.parent;
+    }
+    if(isAttached) allKeyMeshes.splice(i, 1);
+  }
+});
+
+/* ================================================================
+   RAYCASTER & PLAYING
+   ================================================================ */
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const noteDisplay = document.getElementById('noteDisplay');
+
+function setPointerFromEvent(e){
+  const rect = renderer.domElement.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+}
+
+function getKeyUnderPointer(){
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(allKeyMeshes.map(k => k.mesh), false);
+  if(hits.length === 0) return null;
+  const hitMesh = hits[0].object;
+  return allKeyMeshes.find(k => k.mesh === hitMesh) || null;
+}
+
+function pressKeyVisual(key){
+  if(!key) return;
+  if(key.isBlack){ key.mesh.material = key.pressedMat; } 
+  else { const mats = key.mesh.material.slice(); mats[2] = key.pressedMat; key.mesh.material = mats; }
+  key.mesh.position.y -= 0.025;
+  key.mesh.userData.pressed = true;
+}
+
+function releaseKeyVisual(key){
+  if(!key) return;
+  if(key.isBlack){ key.mesh.material = key.baseMat; } 
+  else { const mats = key.mesh.material.slice(); mats[2] = key.baseMat; key.mesh.material = mats; }
+  if(key.mesh.userData.pressed){
+    key.mesh.position.y += 0.025;
+    key.mesh.userData.pressed = false;
+  }
+}
+
+function triggerPress(note, oct){
+  AudioEngine.noteOn(note, oct);
+  noteDisplay.textContent = note + oct;
+  noteDisplay.classList.remove('flash');
+  void noteDisplay.offsetWidth;
+  noteDisplay.classList.add('flash');
+}
+
+function triggerRelease(note, oct){
+  AudioEngine.noteOff(note, oct);
+}
+
+renderer.domElement.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  AudioEngine.init();
+  setPointerFromEvent(e);
+  const key = getKeyUnderPointer();
+  if(key){
+    triggerPress(key.note, key.oct);
+    pressKeyVisual(key);
+    renderer.domElement.setPointerCapture(e.pointerId);
+  }
+});
+
+renderer.domElement.addEventListener('pointermove', (e) => {
+  if(e.buttons === 0 && e.pointerType === 'mouse') return; 
+  setPointerFromEvent(e);
+  const key = getKeyUnderPointer();
+  allKeyMeshes.forEach(k => {
+    if(k.mesh.userData.pressed && k !== key){
+      triggerRelease(k.note, k.oct);
+      releaseKeyVisual(k);
+    }
+  });
+  if(key && !key.mesh.userData.pressed){
+    triggerPress(key.note, key.oct);
+    pressKeyVisual(key);
+  }
+});
+
+renderer.domElement.addEventListener('pointerup', () => {
+  allKeyMeshes.forEach(k => {
+    if(k.mesh.userData.pressed){
+      triggerRelease(k.note, k.oct);
+      releaseKeyVisual(k);
+    }
+  });
+});
+
+renderer.domElement.addEventListener('pointerleave', () => {
+  allKeyMeshes.forEach(k => {
+    if(k.mesh.userData.pressed){
+      triggerRelease(k.note, k.oct);
+      releaseKeyVisual(k);
+    }
+  });
+});
+
+/* ---------- COMPUTER KEYBOARD (EXACT MAPPING) ---------- */
+window.addEventListener('keydown', (e) => {
+  const tag = e.target.tagName.toLowerCase();
+  if(tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+  if(e.repeat) return;
+
+  const k = e.key;
+
+  if(k === 'z' || k === 'Z') { if(state.octave > -2) state.octave--; return; }
+  if(k === 'x' || k === 'X') { if(state.octave < 2) state.octave++; return; }
+  if(k === ' '){
+    e.preventDefault();
+    if (!state.sustain) {
+      state.sustain = true;
+      AudioEngine.toggleSustain(true);
+    }
+    return;
+  }
+
+  const noteName = KEY_MAP[k];
+  if(noteName){
+    e.preventDefault();
+    const oct = 4 + state.octave;
+    triggerPress(noteName, oct);
+    const key = allKeyMeshes.find(k => k.note === noteName && k.oct === oct);
+    if(key) pressKeyVisual(key);
+  }
+});
+
+window.addEventListener('keyup', (e) => {
+  const tag = e.target.tagName.toLowerCase();
+  if(tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+  const k = e.key;
+
+  if(k === ' '){
+    state.sustain = false;
+    AudioEngine.toggleSustain(false);
+    return;
+  }
+
+  const noteName = KEY_MAP[k];
+  if(noteName){
+    const oct = 4 + state.octave;
+    triggerRelease(noteName, oct);
+    const key = allKeyMeshes.find(k => k.note === noteName && k.oct === oct);
+    if(key) releaseKeyVisual(key);
+  }
+});
+
+/* ================================================================
+   AUTHENTICATION & HISTORY LOGIC
+   ================================================================ */
+let currentUser = null; 
+
+function updateAuthUI() {
+  const area = document.getElementById('authArea');
+  if (currentUser) {
+    area.innerHTML = `
+      <span style="font-size:0.8rem; color:var(--grey); margin-right:0.5rem;">Hi, ${currentUser.email.split('@')[0]}</span>
+      <div class="user-avatar" onclick="signOut()" title="Sign Out">${currentUser.email[0].toUpperCase()}</div>
+    `;
+    document.getElementById('historyPrompt').textContent = "Your saved melodies will appear here.";
+  } else {
+    area.innerHTML = `
+      <button class="btn-auth" onclick="toggleModal('authModal', true)">
+        <i class="fas fa-user"></i> Sign In
+      </button>
+    `;
+    document.getElementById('historyPrompt').textContent = "Sign in to save and view your melodies.";
+  }
+  loadHistory();
+}
+
+window.signOut = function() {
+  currentUser = null;
+  updateAuthUI();
+  alert("Signed out successfully.");
+}
+
+window.toggleModal = function(id, open) {
+  document.getElementById(id).classList.toggle('open', open);
+}
+
+document.getElementById('emailAuthBtn').addEventListener('click', () => {
+  const email = document.getElementById('authEmail').value;
+  const pass = document.getElementById('authPassword').value;
+  if(!email || !pass) return alert("Please enter email and password.");
+  currentUser = { email: email };
+  updateAuthUI();
+  toggleModal('authModal', false);
+  alert("Signed in successfully (Mock). Connect Firebase to enable real accounts.");
+});
+
+document.getElementById('googleSignInBtn').addEventListener('click', () => {
+  currentUser = { email: "pianist@gmail.com" };
+  updateAuthUI();
+  toggleModal('authModal', false);
+  alert("Signed in with Google (Mock). Connect Firebase to enable real accounts.");
+});
+
+function saveMelody() {
+  if (!currentUser) {
+    alert("Please sign in to save your melodies.");
+    toggleModal('authModal', true);
+    return;
+  }
+  const name = prompt("Name this melody:", "My Melody " + new Date().toLocaleTimeString());
+  if (!name) return;
+
+  let history = JSON.parse(localStorage.getItem('ikaze_history') || '[]');
+  history.push({ name, date: new Date().toLocaleString() });
+  localStorage.setItem('ikaze_history', JSON.stringify(history));
+  loadHistory();
+  alert("Melody saved to your account history!");
+}
+
+function loadHistory() {
+  const list = document.getElementById('historyList');
+  if (!currentUser) {
+    list.innerHTML = `<div class="history-empty">Sign in to view history.</div>`;
+    return;
+  }
+
+  let history = JSON.parse(localStorage.getItem('ikaze_history') || '[]');
+  if (history.length === 0) {
+    list.innerHTML = `<div class="history-empty">No melodies saved yet. Play something and save it!</div>`;
+    return;
+  }
+
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item">
+      <div>
+        <div style="font-weight:600; color:var(--ivory);">${h.name}</div>
+        <div style="font-size:0.7rem; color:var(--grey);">${h.date}</div>
+      </div>
+      <button style="background:none; border:none; color:#FF4B4B; cursor:pointer;" onclick="deleteMelody(${i})">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+  `).join('');
+}
+
+window.deleteMelody = function(index) {
+  let history = JSON.parse(localStorage.getItem('ikaze_history') || '[]');
+  history.splice(index, 1);
+  localStorage.setItem('ikaze_history', JSON.stringify(history));
+  loadHistory();
+}
+
+document.getElementById('saveMelodyBtn').addEventListener('click', saveMelody);
+document.getElementById('historyBtn').addEventListener('click', () => {
+  toggleModal('historyModal', true);
+  loadHistory();
+});
+
+/* ================================================================
+   UI CONTROLS
+   ================================================================ */
+const gearBtn = document.getElementById('gearBtn');
+const controlPanel = document.getElementById('controlPanel');
+gearBtn.addEventListener('click', () => {
+  gearBtn.classList.toggle('active');
+  controlPanel.classList.toggle('open');
+});
+
+document.getElementById('tutorialBtn').addEventListener('click', () => {
+  toggleModal('tutorialModal', true);
+});
+
+const transposeSelect = document.getElementById('transposeSelect');
+const transposeLabel = document.getElementById('transposeLabel');
+for(let i = -12; i <= 12; i++){
+  const opt = document.createElement('option');
+  opt.value = i;
+  opt.textContent = (i > 0 ? '+' : '') + i + (i === 0 ? ' (Original)' : '');
+  transposeSelect.appendChild(opt);
+}
+transposeSelect.value = 0;
+transposeSelect.addEventListener('change', (e) => {
+  const val = parseInt(e.target.value, 10);
+  AudioEngine.setTranspose(val);
+  transposeLabel.textContent = (val > 0 ? '+' : '') + val + ' st';
+});
+
+document.getElementById('instrumentSelect').addEventListener('change', (e) => {
+  AudioEngine.setInstrument(e.target.value);
+});
+
+const pitchSlider = document.getElementById('pitchSlider');
+const pitchLabel = document.getElementById('pitchLabel');
+pitchSlider.addEventListener('input', (e) => {
+  const val = parseInt(e.target.value, 10);
+  AudioEngine.setPitch(val);
+  pitchLabel.textContent = (val > 0 ? '+' : '') + val + ' ct';
+});
+
+const volSlider = document.getElementById('volSlider');
+const volLabel = document.getElementById('volLabel');
+volSlider.addEventListener('input', (e) => {
+  const val = parseInt(e.target.value, 10);
+  AudioEngine.setVolume(val / 100);
+  volLabel.textContent = val + '%';
+});
+
+const reverbSlider = document.getElementById('reverbSlider');
+const reverbLabel = document.getElementById('reverbLabel');
+reverbSlider.addEventListener('input', (e) => {
+  const val = parseInt(e.target.value, 10);
+  AudioEngine.setReverb(val / 100);
+  reverbLabel.textContent = val + '%';
+});
+
+const zoomSlider = document.getElementById('zoomSlider');
+const zoomLabel = document.getElementById('zoomLabel');
+let camRadius = 6.2;
+zoomSlider.addEventListener('input', (e) => {
+  camRadius = parseFloat(e.target.value);
+  zoomLabel.textContent = camRadius.toFixed(1);
+});
+
+const recordBtn = document.getElementById('recordBtn');
+recordBtn.addEventListener('click', () => {
+  const isRec = AudioEngine.toggleRecording();
+  if(isRec) {
+    recordBtn.classList.add('recording');
+    recordBtn.innerHTML = '<i class="fas fa-square"></i> Stop & Export Audio';
+  } else {
+    recordBtn.classList.remove('recording');
+    recordBtn.innerHTML = '<i class="fas fa-circle"></i> Start Recording';
+  }
+});
+
+/* ---------- CAMERA ---------- */
+let camHeight = 3.0;
+let camTargetY = 0.4; 
+camera.position.set(0, camHeight, camRadius);
+camera.lookAt(0, camTargetY, 0);
+
+let mouseX = 0, mouseY = 0;
+window.addEventListener('mousemove', (e) => {
+  mouseX = (e.clientX / innerWidth - 0.5) * 2;
+  mouseY = (e.clientY / innerHeight - 0.5) * 2;
+});
+
+function onResize(){
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+}
+window.addEventListener('resize', onResize);
+
+/* ---------- ANIMATE ---------- */
+const clock = new THREE.Clock();
+
+function animate(){
+  requestAnimationFrame(animate);
+
+  if(pianos.length > 0) {
+    const last = pianos[pianos.length - 1];
+    camTargetY = last.position.y + 0.4;
+    camHeight = 3.0 + (last.position.y * 0.3); 
+  }
+
+  camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.03;
+  camera.position.y += (camHeight + mouseY * -0.2 - camera.position.y) * 0.03;
+  camera.position.z = camRadius;
+  
+  camera.lookAt(0, camTargetY, 0);
+
+  renderer.render(scene, camera);
+}
+
+/* ---------- INIT ---------- */
+function init(){
+  AudioEngine.setInstrument(state.instrument);
+  AudioEngine.setVolume(0.72);
+  
+  createPiano(0, 0, 0);
+  updateAuthUI();
+  
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hide');
+  }, 600);
+
+  animate();
+}
+
+init();
+</script>
+</body>
+</html>
